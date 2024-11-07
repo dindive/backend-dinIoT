@@ -61,48 +61,41 @@ mqttClient.on("message", async (topic, message) => {
     // Adjust lighting based on LDR input
     if (data.value < 100) {
       // Assuming 100 is the threshold for low light
-      mqttClient.publish("actuators/light", JSON.stringify({ state: "on" }));
+      mqttClient.publish("actuators/light", JSON.stringify({ command: "on" }));
     } else {
-      mqttClient.publish("actuators/light", JSON.stringify({ state: "off" }));
+      mqttClient.publish("actuators/light", JSON.stringify({ command: "off" }));
     }
   }
 });
 
-// Helper function to read the database
+// Helper functions for reading and writing to the JSON file
 async function readDB() {
-  try {
-    const data = await fs.readFile(DB_PATH, "utf8");
-    return JSON.parse(data);
-  } catch (error) {
-    // If the file doesn't exist, return an empty database structure
-    return { users: [], rfidTags: [], sensorData: [] };
-  }
+  const data = await fs.readFile(DB_PATH, "utf8");
+  return JSON.parse(data);
 }
 
-// Helper function to write to the database
 async function writeDB(data) {
   await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2));
 }
 
-// JWT Authentication middleware
-const authenticateJWT = (req, res, next) => {
-  const token = req.header("Authorization");
-  if (!token) return res.status(401).json({ error: "Access denied" });
+// Authentication middleware
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (token == null) return res.sendStatus(401);
 
   jwt.verify(
     token,
     "ca987984c0450e7b701a69e268b5cff670ff8590362ebef041dfbe0b9526a235",
     (err, user) => {
-      if (err) return res.status(403).json({ error: "Invalid token" });
+      if (err) return res.sendStatus(403);
       req.user = user;
       next();
     },
   );
-};
+}
 
-// API Routes
-
-// User registration
 app.post("/register", async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
@@ -137,41 +130,71 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Door access control
-app.post("/door/access", authenticateJWT, async (req, res) => {
-  const { tagId } = req.body;
-  const db = await readDB();
-  const tag = db.rfidTags.find((t) => t.tagId === tagId);
-  if (tag) {
-    mqttClient.publish("actuators/door", JSON.stringify({ state: "unlock" }));
-    res.json({ message: "Access granted" });
-  } else {
-    res.status(403).json({ error: "Access denied" });
+// New endpoints for door and light status
+app.get("/door/status", authenticateToken, async (req, res) => {
+  try {
+    const db = await readDB();
+    res.json({ status: db.doorStatus || "closed" });
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching door status" });
   }
 });
 
-// Get sensor data
-app.get("/sensors/:type", authenticateJWT, async (req, res) => {
-  const db = await readDB();
-  const data = db.sensorData
-    .filter((d) => d.type === req.params.type)
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-    .slice(0, 10);
-  res.json(data);
+app.post("/door/toggle", authenticateToken, async (req, res) => {
+  try {
+    const db = await readDB();
+    const newStatus = db.doorStatus === "open" ? "closed" : "open";
+    db.doorStatus = newStatus;
+    await writeDB(db);
+    mqttClient.publish(
+      "actuators/door",
+      JSON.stringify({ command: newStatus }),
+    );
+    res.json({ status: newStatus });
+  } catch (error) {
+    res.status(500).json({ error: "Error toggling door" });
+  }
 });
 
-// Admin: Add RFID tag
-app.post("/admin/rfid", authenticateJWT, async (req, res) => {
-  if (req.user.role !== "admin")
-    return res.status(403).json({ error: "Admin access required" });
-
-  const { tagId, userId } = req.body;
-  const db = await readDB();
-  db.rfidTags.push({ tagId, userId });
-  await writeDB(db);
-  res.status(201).json({ message: "RFID tag added successfully" });
+app.get("/light/status", authenticateToken, async (req, res) => {
+  try {
+    const db = await readDB();
+    res.json({ status: db.lightStatus || "off" });
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching light status" });
+  }
 });
 
-// Start server
+app.post("/light/toggle", authenticateToken, async (req, res) => {
+  try {
+    const db = await readDB();
+    const newStatus = db.lightStatus === "on" ? "off" : "on";
+    db.lightStatus = newStatus;
+    await writeDB(db);
+    mqttClient.publish(
+      "actuators/light",
+      JSON.stringify({ command: newStatus }),
+    );
+    res.json({ status: newStatus });
+  } catch (error) {
+    res.status(500).json({ error: "Error toggling light" });
+  }
+});
+
+app.get("/sensors/gas", authenticateToken, async (req, res) => {
+  try {
+    const db = await readDB();
+    const latestGasReading = db.sensorData
+      .filter((data) => data.type === "gas")
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+    res.json([latestGasReading]);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching gas sensor data" });
+  }
+});
+
+// Start the server
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
