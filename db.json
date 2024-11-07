@@ -5,6 +5,12 @@
       "username": "mike",
       "password": "$2a$10$BQUrFwxO6TdgQT/Zm/IOOuLjOY5nZci/lOjCllpMLgfeVTyxqZpzK",
       "role": "user"
+    },
+    {
+      "id": "1730943390966",
+      "username": "sophiat",
+      "password": "$2a$10$kVFCRRkov7S2zsfEgR2Q4.5IB33in/Z9/CpvsiBzVpdPeyaqQe4tq",
+      "role": "user"
     }
   ],
   "rfidTags": [],

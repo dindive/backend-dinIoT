@@ -7,7 +7,6 @@ const path = require("path");
 const mqtt = require("mqtt");
 const http = require("http");
 const socketIo = require("socket.io");
-
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -129,7 +128,7 @@ app.post("/login", async (req, res) => {
   if (user && (await bcrypt.compare(req.body.password, user.password))) {
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      "your_jwt_secret",
+      "ca987984c0450e7b701a69e268b5cff670ff8590362ebef041dfbe0b9526a235",
       { expiresIn: "1h" },
     );
     res.json({ token });
