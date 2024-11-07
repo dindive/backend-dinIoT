@@ -1,0 +1,12 @@
+{
+  "users": [
+    {
+      "id": "1730063783781",
+      "username": "mike",
+      "password": "$2a$10$BQUrFwxO6TdgQT/Zm/IOOuLjOY5nZci/lOjCllpMLgfeVTyxqZpzK",
+      "role": "user"
+    }
+  ],
+  "rfidTags": [],
+  "sensorData": []
+}
