@@ -776,6 +776,31 @@
       "type": "light",
       "value": 6,
       "timestamp": "2024-11-08T05:45:03.083Z"
+    },
+    {
+      "type": "gas",
+      "value": 5,
+      "timestamp": "2024-11-08T05:45:03.307Z"
+    },
+    {
+      "type": "light",
+      "value": 6,
+      "timestamp": "2024-11-08T05:45:08.072Z"
+    },
+    {
+      "type": "gas",
+      "value": 6,
+      "timestamp": "2024-11-08T05:45:08.352Z"
+    },
+    {
+      "type": "light",
+      "value": 6,
+      "timestamp": "2024-11-08T05:45:13.081Z"
+    },
+    {
+      "type": "gas",
+      "value": 5,
+      "timestamp": "2024-11-08T05:45:13.342Z"
     }
   ]
 }
