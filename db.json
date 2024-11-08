@@ -13,8 +13,19 @@
       "role": "user"
     }
   ],
-  "doorStatus": "open",
+  "doorStatus": "closed",
   "lightStatus": "off",
   "rfidTags": [],
-  "sensorData": []
+  "sensorData": [
+    {
+      "type": "light",
+      "value": 6,
+      "timestamp": "2024-11-08T20:36:11.424Z"
+    },
+    {
+      "type": "gas",
+      "value": 5,
+      "timestamp": "2024-11-08T20:36:12.753Z"
+    }
+  ]
 }
