@@ -59,12 +59,6 @@ mqttClient.on("message", async (topic, message) => {
     });
     await writeDB(db);
     // Adjust lighting based on LDR input
-    if (data.value < 100) {
-      // Assuming 100 is the threshold for low light
-      mqttClient.publish("actuators/light", JSON.stringify({ command: "on" }));
-    } else {
-      mqttClient.publish("actuators/light", JSON.stringify({ command: "off" }));
-    }
   }
 });
 
