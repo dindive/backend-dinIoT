@@ -166,6 +166,10 @@ app.post("/light/toggle", authenticateToken, async (req, res) => {
 app.get("/sensors/gas", authenticateToken, async (req, res) => {
   try {
     const db = await readDB();
+    const latestGasReading = db.sensorData
+      .filter((data) => data.type === "gas")
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+    res.json([latestGasReading]);
   } catch (error) {
     res.status(500).json({ error: "Error fetching gas sensor data" });
   }

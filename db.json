@@ -13,8 +13,8 @@
       "role": "user"
     }
   ],
-  "doorStatus": "closed",
-  "lightStatus": "off",
+  "doorStatus": "open",
+  "lightStatus": "on",
   "rfidTags": [],
   "sensorData": [
     {
