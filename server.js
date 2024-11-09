@@ -43,6 +43,12 @@ mqttClient.on("message", async (topic, message) => {
     }
     // Save gas sensor data
     const db = await readDB();
+    db.sensorData.push({
+      type: "gas",
+      value: data.value,
+      timestamp: new Date().toISOString(),
+    });
+    await writeDB(db);
   } else if (topic === "sensors/light") {
     // Process light sensor data
     const db = await readDB();
